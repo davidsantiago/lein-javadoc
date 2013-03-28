@@ -5,5 +5,5 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :eval-in-leiningen true
 
-  :dependencies [[lein-jdk-tools "0.1.1-SNAPSHOT"]]
+  :dependencies [[lein-jdk-tools "0.1.0"]]
 )
