@@ -42,9 +42,21 @@ if you prefer). The map can have the following keys:
   also be warned, to head off potential frustration. This option
   exists as a safety valve, in case this task does not currently
   support some combination of configuration options you really need.
+- `:jdk-home`: This key is a string indicating the path to the JDK
+  home, used for determining the location of the `java` command and
+  tools.jar. This should include the `jre` directory, as in
+  `"/usr/lib/jvm/jdk-8-oracle-x64/jre"`.
+- `:java-cmd`: This key is a string indicating the path to the `java`
+  command. If not supplied, defaults to these in order:
+    - `../bin/java` relative to `:jdk-home`, if present;
+    - value of `JAVA_CMD` in the environment;
+    - the constant `java`.
 - `:tools-jar-paths`: This key is a vector of strings pointing to
-  possible locations of tools.jar. If empty or missing, lein-javadoc
-  will attempt to locate tools.jar by looking in java.home.
+  possible locations of tools.jar. If empty or missing, defaults to
+  these in order:
+    - `../lib/tools.jar` relative to `:jdk-home`, if present;
+    - `../lib/tools.jar` relative to current JVM's `java.home`
+      property.
 
 Also note that you must have the JDK installed for this task to work,
 as Javadoc is a part of the JDK's lib/tools.jar. This plugin should
@@ -55,7 +67,16 @@ Once the plugin is configured for your project, you can invoke the
 directory.
 
     $ lein javadoc
-    
+
+To use an alternative JDK, use `JAVA_CMD` with lein:
+
+    $ JAVA_CMD=/usr/lib/jvm/java-1.7.0-openjdk-amd64/bin/java lein javadoc
+
+By default this will have the effect of using both the java binary and
+the tools.jar from the specified JDK. (In other uses, be sure to align
+the source of the java binary and the source of tools.jar to ensure
+compatibility.)
+
 ## Development
 
 If you want to hack on this code, note that it does not currently work
