@@ -56,6 +56,6 @@
   (with-redefs [jd/tools-jar (constantly nil)]
     (with-redefs [leiningen.core.main/abort #(throw (Exception. %))]
       (is (thrown-with-msg? Exception #"must be a collection of strings"
-                            (= (jd/tools-classpath {:tools-jar-paths "foo"})))))
-    (is (thrown-with-msg? Exception #"No tools[.]jar found"
-                          (= (jd/tools-classpath {}))))))
+                            (jd/tools-classpath {:tools-jar-paths "foo"})))
+      (is (thrown-with-msg? Exception #"No tools[.]jar found"
+                            (jd/tools-classpath {}))))))
