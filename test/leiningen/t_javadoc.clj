@@ -59,3 +59,37 @@
                             (jd/tools-classpath {:tools-jar-paths "foo"})))
       (is (thrown-with-msg? Exception #"No tools[.]jar found"
                             (jd/tools-classpath {}))))))
+
+(deftest get-javadoc-opts
+  (testing "empty -- defaulting"
+    (is (= (jd/get-javadoc-opts {:javadoc-opts {}})
+           (jd/get-javadoc-opts {})
+           {:output-dir "javadoc/"
+            :java-source-paths nil
+            :package-names nil
+            :additional-args nil
+            :exact-command-line nil
+            :jdk-home nil
+            :java-cmd nil
+            :tools-jar-paths nil})))
+  (testing "full + unrecognized"
+    (is (= (jd/get-javadoc-opts {:java-source-paths ["jsp"]
+                                 :javadoc-opts
+                                 {:output-dir "od"
+                                  :package-names ["pn"]
+                                  :additional-args ["aa"]
+                                  :exact-command-line ["ecl"]
+                                  :jdk-home "jh"
+                                  :java-cmd "jc"
+                                  :tools-jar-paths ["tjp"]
+                                  ;; confirm that unrecognized things
+                                  ;; are not included
+                                  :bogus-extra "be"}})
+           {:output-dir "od"
+            :java-source-paths ["jsp"]
+            :package-names ["pn"]
+            :additional-args ["aa"]
+            :exact-command-line ["ecl"]
+            :jdk-home "jh"
+            :java-cmd "jc"
+            :tools-jar-paths ["tjp"]}))))
