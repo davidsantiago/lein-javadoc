@@ -42,7 +42,8 @@ not found."
   [project]
   (let [javadoc-opts (:javadoc-opts project)]
     {:output-dir (get javadoc-opts :output-dir "javadoc/")
-     :java-source-paths (get project :java-source-paths)
+     :java-source-paths (get javadoc-opts :java-source-paths
+                            (get project :java-source-paths))
      :package-names (get javadoc-opts :package-names)
      :additional-args (get javadoc-opts :additional-args)
      :exact-command-line (get javadoc-opts :exact-command-line)
@@ -100,7 +101,8 @@ not found."
   [project javadoc-opts]
   (concat
    (lein-cp/get-classpath project)
-   (tools-classpath javadoc-opts)))
+   (tools-classpath javadoc-opts)
+   (:java-source-paths javadoc-opts)))
 
 (defn run-javadoc
   [sh-args]
