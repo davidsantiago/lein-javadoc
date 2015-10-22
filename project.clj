@@ -1,4 +1,4 @@
-(defproject lein-javadoc "0.3.0"
+(defproject lein-javadoc "0.3.1-SNAPSHOT"
   :description "Run javadoc for the java source in your lein project."
   :url "http://github.com/davidsantiago/lein-javadoc"
   :license {:name "Eclipse Public License"
