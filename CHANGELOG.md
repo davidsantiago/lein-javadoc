@@ -1,12 +1,14 @@
 # Changes
 
-## (pending)
+## 0.3.0: 2015-10-22
 
 - Feature: Allow use of alternative JDKs.
     - Add `:java-cmd` option to specify Java command, with `JAVA_CMD`
       environment variable as fallback
     - Add `:jdk-home` for autodetection of tools.jar and java binary
       in alternative JDK
+- Bugfix: Had failed to read `:java-source-paths` from javadoc-opts
+  (as advertised in README) before falling back to reading from top level
 
 ## 0.2.0: 2015-05-03
 
