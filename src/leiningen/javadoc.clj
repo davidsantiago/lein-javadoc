@@ -5,14 +5,35 @@
             [clojure.java.io :as io]
             [clojure.java.shell :as sh]))
 
+(defn getenv
+  "Wrap System/getenv(String) for testing."
+  [k]
+  (System/getenv k))
+
+(defn getprop
+  "Wrap System/getProperty for testing."
+  ([k] (System/getProperty k))
+  ([k d] (System/getProperty k d)))
+
 ;;;; Obviate lein-jdk-tools
+
+(defn canonical-path
+  "Given a set of path components, yield the canonical path, or nil if
+not found."
+  [path-parts]
+  (let [f (apply io/file path-parts)]
+    (when (.exists (io/file f))
+      (.getCanonicalPath f))))
 
 (defn tools-jar
   "Yield the canonical path to the JDK tools.jar file, or nil if not found."
-  []
-  (let [tj (io/file (System/getProperty "java.home") ".." "lib" "tools.jar")]
-    (when (.exists (io/file tj))
-      (.getCanonicalPath tj))))
+  [jdk-home-path]
+  (canonical-path [jdk-home-path ".." "lib" "tools.jar"]))
+
+(defn java-bin
+  "Yield the canonical path to the java binary, or nil if not found."
+  [jdk-home-path]
+  (canonical-path [jdk-home-path ".." "bin" "java"]))
 
 ;;;; lein-javadoc
 
@@ -21,10 +42,13 @@
   [project]
   (let [javadoc-opts (:javadoc-opts project)]
     {:output-dir (get javadoc-opts :output-dir "javadoc/")
-     :java-source-paths (get project :java-source-paths)
+     :java-source-paths (get javadoc-opts :java-source-paths
+                            (get project :java-source-paths))
      :package-names (get javadoc-opts :package-names)
      :additional-args (get javadoc-opts :additional-args)
      :exact-command-line (get javadoc-opts :exact-command-line)
+     :jdk-home (get javadoc-opts :jdk-home)
+     :java-cmd (get javadoc-opts :java-cmd)
      :tools-jar-paths (get javadoc-opts :tools-jar-paths)}))
 
 (defn check-options
@@ -52,6 +76,15 @@
                          (:package-names javadoc-opts))]
               (:additional-args javadoc-opts))))
 
+(defn java-cmd-path
+  "Determine a path for shelling out to java."
+  [javadoc-opts]
+  (or (:java-cmd javadoc-opts)
+      (when-let [jh (:jdk-home javadoc-opts)]
+        (java-bin jh))
+      (getenv "JAVA_CMD")
+      "java"))
+
 (defn tools-classpath
   "Construct a tools.jar-containing classpath coll or die trying."
   [javadoc-opts]
@@ -59,14 +92,17 @@
     (if (string? paths)
       (abort ":javadoc-opts :tools-jar-paths must be a collection of strings, not a single string. (May also be empty or nil.)")
       paths)
-    (or [(tools-jar)]
-        (abort "No tools.jar found in system or specified in project, cannot run javadoc."))))
+    [(or (when-let [jh (:jdk-home javadoc-opts)]
+           (tools-jar jh))
+         (tools-jar (getprop "java.home"))
+         (abort "No tools.jar found in system or specified in project, cannot run javadoc."))]))
 
 (defn make-classpath
   [project javadoc-opts]
   (concat
    (lein-cp/get-classpath project)
-   (tools-classpath javadoc-opts)))
+   (tools-classpath javadoc-opts)
+   (:java-source-paths javadoc-opts)))
 
 (defn run-javadoc
   [sh-args]
@@ -89,7 +125,8 @@
     (when (check-options javadoc-opts)
       (let [jd-args (opts->args javadoc-opts)
             cp (make-classpath project javadoc-opts)
-            sh-args (list* "java"
+            java-cmd (java-cmd-path javadoc-opts)
+            sh-args (list* java-cmd
                            "-cp" (str/join \: cp)
                            "com.sun.tools.javadoc.Main"
                            jd-args)]
