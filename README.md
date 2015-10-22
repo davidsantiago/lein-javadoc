@@ -4,7 +4,7 @@ Use Leiningen to build the javadoc for the java source code in your projects.
 
 ## Usage
 
-Put `[lein-javadoc "0.2.0"]` into the `:plugins` vector of your project.clj.
+Put `[lein-javadoc "0.3.0"]` into the `:plugins` vector of your project.clj.
 
 For this plugin to do anything, you need to add a map of configuration
 options to the `:javadoc-opts` key of your project map (or a profile
@@ -76,14 +76,6 @@ By default this will have the effect of using both the java binary and
 the tools.jar from the specified JDK. (In other uses, be sure to align
 the source of the java binary and the source of tools.jar to ensure
 compatibility.)
-
-## Development
-
-If you want to hack on this code, note that it does not currently work
-when invoked from its own project directory. You should `lein install`
-a SNAPSHOT version of it, and then test it from another project. Sorry
-about that, but there appears to be some difficulty getting the
-middleware required to work in its own project directory.
 
 ## License
 
